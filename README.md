@@ -1,24 +1,6 @@
----
-page_type: sample
-languages:
-- csharp
-products:
-- dotnet
-description: "Add 150 character max description"
-urlFragment: "update-this-to-unique-url-stub"
----
+# Bright-AppInsights-Monitoring-Connector
 
-# Official Microsoft Sample
-
-<!-- 
-Guidelines on README format: https://review.docs.microsoft.com/help/onboard/admin/samples/concepts/readme-template?branch=master
-
-Guidance on onboarding samples to docs.microsoft.com/samples: https://review.docs.microsoft.com/help/onboard/admin/samples/process/onboarding?branch=master
-
-Taxonomies for products and languages: https://review.docs.microsoft.com/new-hope/information-architecture/metadata/taxonomies?branch=master
--->
-
-Give a short description for your sample here. What does it do and why is it important?
+Sample code to push monitoring data from Bright cluster to Application Insights.
 
 ## Contents
 
@@ -26,7 +8,7 @@ Outline the file contents of the repository. It helps users navigate the codebas
 
 | File/folder       | Description                                |
 |-------------------|--------------------------------------------|
-| `src`             | Sample source code.                        |
+| `src`             | Source code.                        |
 | `.gitignore`      | Define what to ignore at commit time.      |
 | `CHANGELOG.md`    | List of changes to the sample.             |
 | `CONTRIBUTING.md` | Guidelines for contributing to the sample. |
@@ -35,19 +17,51 @@ Outline the file contents of the repository. It helps users navigate the codebas
 
 ## Prerequisites
 
-Outline the required components and tools that a user might need to have on their machine in order to run the sample. This can be anything from frameworks, SDKs, OS versions or IDE releases.
+1. Docker installed
+2. Application Insights Instrumentation Key
+3. Bright Head node Host IP
+4. Bright connection certificates with has authorized for CMMon service
 
 ## Setup
 
-Explain how to prepare the sample once the user clones or downloads the repository. The section should outline every step necessary to install dependencies and set up any settings (for example, API keys and output folders).
+1. Configure BrightHostIP and InstrumentationKey in Bright-AppInsights-Monitoring-Connector/appconfig.json
+2. Configure Necessary Metrics inb Bright-AppInsights-Monitoring-Connector/metricconfig.ini
+3. Add pem and key to Bright-AppInsights-Monitoring-Connector/certs as bright-cert.pem and bright-key.key respectively
 
-## Runnning the sample
+## Running the sample
 
-Outline step-by-step instructions to execute the sample and see its output. Include steps for executing the sample from the IDE, starting specific services in the Azure portal or anything related to the overall launch of the code.
+    # go to project dir
+    cd Bright-AppInsights-Monitoring-Connector
+    
+    # build docker image
+    docker build --tag='appinsights-monitoring' .
+    
+    # run docker image
+    docker run -d appinsights-monitoring
+    
+## Create sample Dashboard graph
 
-## Key concepts
+1. Go to your Application Insights workspace
+2. Go to Logs (Analytics)
+3. Run below command (It may take few minutes to reflect metric data to application insights)
 
-Provide users with more context on the tools and services used in the sample. Explain some of the code that is being used and how services interact with each other.
+    `
+        traces
+            | summarize timestamp = min(timestamp) by tostring(message)
+            | extend nodeinfo = parse_json(message)
+            | extend hostname = tostring(nodeinfo.Hostname) 
+            | extend cpuidle = toreal(nodeinfo.CPUIdle)
+            | project TimeStamp = timestamp, Hostname = hostname, CPUUsage = cpuidle 
+            | render timechart 
+    `
+
+4. Click Pin to Dashboard to add the graph to Azure Dashboards
+
+## How to Debug
+
+Run below command to check application logs
+
+    docker exec <docker-container-id> tail -20 Trace_log.log
 
 ## Contributing
 
