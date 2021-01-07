@@ -2,7 +2,7 @@ applicationinsights==0.11.9
 cffi==1.13.2
 cryptography==2.8
 humanfriendly==4.18
-lxml==4.4.1
+lxml==4.6.2
 monotonic==1.5
 ply==3.11
 pycparser==2.19
